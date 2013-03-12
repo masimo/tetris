@@ -1,5 +1,4 @@
-      var canvas = document.getElementById('myCanvas');
-      var context = canvas.getContext('2d');
+      var context = document.getElementById('myCanvas').getContext('2d');
       var figure = {
          0: [
             [0, 0, 0, 0, 1, 1, 0, 0, 0, 0],
@@ -37,6 +36,15 @@
          gridX: 10,
          gridY: 15,
          score: 0,
+         startX: 100,
+         startY: 100,
+         endX: 0,
+         endY: 0,
+         isHorizontal: false,
+         isCube: false,
+         isLine: false,
+         isRectangle: false,
+         reversArr: [],
          itemType: {
             figure: {
                cellPosY: 0,
@@ -67,7 +75,7 @@
          },
          addFigure: function() {
 
-            var randomFigure = parseInt(Math.random()*7);
+            var randomFigure = parseInt(Math.random() * 7);
 
 
             var elemWeight = figure[randomFigure].length;
@@ -239,112 +247,87 @@
          upDownArrowPressed: function() {
             Tetr._interval = Tetr._timeout;
          },
-         reverceFigure: function() {
+         figureIs: function() {
 
-            var temporArr = Tetr.grid.clone(true);
-            var reversArr = new Array;
-            var reversedArr = new Array;
-            var m = -1,
-               startX = startY = Tetr.gridY + 1,
-               endX = endY = 0,
-               centreX = centreY = 0;
-            var horizontal = cube = line = false;
+            if (this.reversArr.length < this.reversArr[0].length) this.isHorizontal = true;
 
+            if (this.reversArr.length == this.reversArr[0].length) {
+               this.isCube = true;
+            } else if (this.reversArr.length == 4 || this.reversArr[0].length == 4) {
+               this.isLine = true;
+            } else if (this.reversArr.length == 2 && this.reversArr[0].length == 3) {
+               this.isRectangle = true;
+            } else if (this.reversArr.length == 3 && this.reversArr[0].length == 2) {
+               this.isRectangle = true;
+            }
 
-            for (var i = 0; i < Tetr.grid.length - 1; i++) {
-               for (var j = 0; j < Tetr.grid[i].length - 1; j++) {
+         },
+         checkCollision: function() {
 
+         },
+         getStartPos: function() {
+            for (var i = 0; i < this.grid.length; i++) {
+               for (var j = 0; j < this.grid[i].length; j++) {
 
-                  if (Tetr.grid[i][j] == 1 && startX > j) {
-                     startX = j;
+                  if (this.grid[i][j] == 1 && this.startX > j) {
+                     this.startX = j;
                   }
-                  if (Tetr.grid[i][j] == 1 && endX < j) {
-                     endX = j;
+                  if (this.grid[i][j] == 1 && this.endX < j) {
+                     this.endX = j;
                   }
 
-                  if (Tetr.grid[i][j] == 1 && startY > i) {
-                     startY = i;
+                  if (this.grid[i][j] == 1 && this.startY > i) {
+                     this.startY = i;
 
                   }
-                  if (Tetr.grid[i][j] == 1 && endY < i) {
-                     endY = i;
+                  if (this.grid[i][j] == 1 && this.endY < i) {
+                     this.endY = i;
 
                   }
                }
             }
-            // get array
-
-            for (var i = startY; i <= endY; i++) {
-               reversArr.push([]);
+         },
+         getFifure: function() {
+            var m = -1;
+            for (var i = this.startY; i <= this.endY; i++) {
+               this.reversArr.push([]);
                m++;
-               for (var j = startX; j <= endX; j++) {
-
-                  reversArr[m].push(Tetr.grid[i][j]);
-
-               }
-
-            }
-            // Reverse array
-            for (var i = endX - startX; i >= 0; i--) {
-               reversedArr.push([]);
-            }
-            for (var i = endX - startX; i >= 0; i--) {
-               for (var j = 0; j <= endY - startY; j++) {
-
-
-
-                  reversedArr[i].push(reversArr[j][i]);
+               for (var j = this.startX; j <= this.endX; j++) {
+                  this.reversArr[m].push(this.grid[i][j]);
 
                }
+
             }
 
-            if (reversArr.length < reversArr[0].length) {
-               horizontal = true;
-            } else if (reversArr.length == reversArr[0].length) {
-               cube = true;
-            } else if (reversArr.length > reversArr[0].length) {
-               horizontal = false;
-            }
-            if (reversArr.length >= 4 || reversArr[0].length >= 4) {
-               line = true;
-            }
+         },
+         refineStartPos: function() {
 
-            // add array
+            if (this.isRectangle && this.isHorizontal) {
+               this.endX--;
+               this.endY++;
+            } else if (this.isRectangle && !this.isHorizontal) {
+               this.endX++;
+               this.endY--;
+            } else if (this.isLine && this.isHorizontal) {
+               this.startX++;
+               this.startY -= 2;
+               this.endX -= 2;
+               this.endY++;
+            } else if (this.isLine && !this.isHorizontal) {
+               this.startX--;
+               this.startY += 2;
+               this.endX += 2;
+               this.endY--;
+            };
+         },
+         addFigureToNewArr : function(reversedArr){
+            
+            var temporArr = Tetr.grid.clone(true);
 
-            if (startX > temporArr[0].length - 3) {
-               startX = temporArr[0].length - 3;
-            } else if (startY > temporArr.length - 3) {
-               startY = temporArr[0].length - 3;
-            }
+            for (var i = 0; i < this.grid.length - 1; i++) {
+               for (var j = 0; j < this.grid[i].length - 1; j++) {
 
-            var midY = parseInt((endY - startY + 1) / 2),
-               midX = parseInt((endX - startX + 1) / 2);
-
-
-            if (horizontal && !cube && !line) {
-               endY = endY + midY;
-               endX = endX - midX;
-            } else if (!horizontal && !cube && !line) {
-               endY = endY - midY;
-               endX = endX + midX;
-            } else if (line && horizontal) {
-               startX = startX + 1;
-               startY = startY - 1;
-               endY = endY + midX;
-               endX = endX - midX;
-            } else if (line && !horizontal) {
-               startX = startX - 1;
-               startY = startY + 1;
-               endY = endY - midY;
-               endX = endX + midY;
-            }
-
-
-
-            for (var i = 0; i < Tetr.grid.length - 1; i++) {
-               for (var j = 0; j < Tetr.grid[i].length - 1; j++) {
-
-                  if (startY <= i && startX <= j && endY >= i && endX >= j) {
+                  if (this.startY <= i && this.startX <= j && this.endY >= i && this.endX >= j) {
 
                      var p = reversedArr[reversedArr.length - 1].shift();
                      if (reversedArr[reversedArr.length - 1].length == 0) var _del = reversedArr.pop();
@@ -355,8 +338,36 @@
             }
 
             Tetr.grid = temporArr.clone();
-            Tetr.move();
+
          },
+         reverceFigure: function() {
+
+            Tetr.getStartPos();
+            Tetr.getFifure();
+            Tetr.figureIs();
+            
+            var reversedArr = Tetr.reversArr.reverse();
+
+            Tetr.refineStartPos();
+
+            Tetr.addFigureToNewArr(reversedArr);
+
+            Tetr.resetAllFlags();
+            
+            Tetr.move();
+
+
+         },
+         resetAllFlags: function(){
+            this.isHorizontal = false;
+            this.isCube = false;
+            this.isLine = false;
+            this.isRectangle = false;
+            this.startX = this.gridY;
+            this.startY = this.gridY;
+            this.endX = 0;
+            this.endY = 0; 
+         }, 
          pause: function() {
             alert("pause");
          }
@@ -382,6 +393,23 @@
 
             }
 
+         }
+         return newArr;
+      };
+      Array.prototype.reverse = function() {
+
+         var newArr = new Array;
+
+         for (var i = Tetr.endX - Tetr.startX; i >= 0; i--) {
+            newArr.push([]);
+         }
+         for (var i = Tetr.endX - Tetr.startX; i >= 0; i--) {
+            for (var j = 0; j <= Tetr.endY - Tetr.startY; j++) {
+
+
+               newArr[i].push(Tetr.reversArr[j][i]);
+
+            }
          }
          return newArr;
       };
