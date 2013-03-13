@@ -1,40 +1,41 @@
-      var context = document.getElementById('myCanvas').getContext('2d');
-      var figure = {
-         0: [
-            [0, 0, 0, 0, 1, 1, 0, 0, 0, 0],
-            [0, 0, 0, 1, 1, 0, 0, 0, 0, 0]
-         ],
-         1: [
-            [0, 0, 0, 0, 1, 1, 0, 0, 0, 0],
-            [0, 0, 0, 0, 1, 1, 0, 0, 0, 0]
-         ],
-         2: [
-            [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-            [0, 0, 0, 1, 1, 1, 0, 0, 0, 0]
-         ],
-         3: [
-            [0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 1, 1, 1, 0, 0, 0, 0]
-         ],
-         4: [
-            [0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
-            [0, 0, 0, 1, 1, 1, 0, 0, 0, 0]
-         ],
-         5: [
-            [0, 0, 0, 1, 1, 1, 1, 0, 0, 0]
-         ],
-         6: [
-            [0, 0, 0, 1, 1, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 1, 1, 0, 0, 0, 0]
-         ]
-      };
+      var ctx = document.getElementById('myCanvas'),
+         context = ctx.getContext('2d'),
+         figure = [
+            [
+               [0, 0, 0, 0, 1, 1, 0, 0, 0, 0],
+               [0, 0, 0, 1, 1, 0, 0, 0, 0, 0]
+            ],
+            [
+               [0, 0, 0, 0, 1, 1, 0, 0, 0, 0],
+               [0, 0, 0, 0, 1, 1, 0, 0, 0, 0]
+            ],
+            [
+               [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+               [0, 0, 0, 1, 1, 1, 0, 0, 0, 0]
+            ],
+            [
+               [0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+               [0, 0, 0, 1, 1, 1, 0, 0, 0, 0]
+            ],
+            [
+               [0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+               [0, 0, 0, 1, 1, 1, 0, 0, 0, 0]
+            ],
+            [
+               [0, 0, 0, 1, 1, 1, 1, 0, 0, 0]
+            ],
+            [
+               [0, 0, 0, 1, 1, 0, 0, 0, 0, 0],
+               [0, 0, 0, 0, 1, 1, 0, 0, 0, 0]
+            ]
+         ];
 
 
       var Tetr = {
-         backgrWidth: 350,
-         backgrHeight: 525,
-         gridX: 10,
-         gridY: 15,
+         backgrWidth: 420,
+         backgrHeight: 595,
+         gridX: 12,
+         gridY: 17,
          score: 0,
          startX: 100,
          startY: 100,
@@ -52,6 +53,12 @@
             }
          },
          _fillColor: "#00F",
+         ctxWidth: function() {
+            return this.backgrWidth + 150;
+         },
+         ctxHeight: function() {
+            return this.backgrHeight + 10;
+         },
          cellWidth: function() {
             return this.backgrWidth / this.gridX;
          },
@@ -75,7 +82,7 @@
          },
          addFigure: function() {
 
-            var randomFigure = parseInt(Math.random() * 7);
+            var randomFigure = parseInt(Math.random() * figure.length);
 
 
             var elemWeight = figure[randomFigure].length;
@@ -99,8 +106,6 @@
 
                }
             }
-
-
 
          },
          buildMove: function() {
@@ -141,13 +146,27 @@
 
          },
          even: function(i) {
+
+
+
             for (var j = this.gridX - 1; j >= 0; j--) {
                if (this.grid[i][j] != 2) return;
-            }
+            };
+
             this.grid.splice(i, 1);
             this.score += 100;
-            this.grid.unshift([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+            this.grid.unshift(this.newEmptyLine());
             this.checkIfEven();
+         },
+         newEmptyLine: function() {
+            var newLine = new Array;
+
+            for (var i = 0; i < Tetr.gridX; i++) {
+               newLine.push(0);
+            };
+
+            return newLine;
+
          },
          buildStatictable: function() {
 
@@ -264,6 +283,30 @@
          },
          checkCollision: function() {
 
+            var paddingRight = this.gridX - 1 - this.endX,
+               paddingLeft = this.startX;
+
+            if (paddingRight < 0) {
+               this.startX += paddingRight;
+               this.endX += paddingRight;
+            } else if (paddingLeft < 0) {
+               this.startX -= paddingLeft;
+               this.endX -= paddingLeft;
+            };
+
+            for (var i = this.startY; i <= this.endY; i++) {
+               for (var j = this.startX; j <= this.endX; j++) {
+                  if (this.grid[i][j] == 2 || this.grid[i][j] == undefined) {
+
+                     return false;
+
+                  };
+
+               }
+            }
+
+            return true;
+
          },
          getStartPos: function() {
             for (var i = 0; i < this.grid.length; i++) {
@@ -320,12 +363,12 @@
                this.endY--;
             };
          },
-         addFigureToNewArr : function(reversedArr){
-            
+         addFigureToNewArr: function(reversedArr) {
+
             var temporArr = Tetr.grid.clone(true);
 
-            for (var i = 0; i < this.grid.length - 1; i++) {
-               for (var j = 0; j < this.grid[i].length - 1; j++) {
+            for (var i = 0; i < this.gridY; i++) {
+               for (var j = 0; j < this.gridX; j++) {
 
                   if (this.startY <= i && this.startX <= j && this.endY >= i && this.endX >= j) {
 
@@ -342,23 +385,23 @@
          },
          reverceFigure: function() {
 
+            Tetr.resetAllFlags();
+
             Tetr.getStartPos();
             Tetr.getFifure();
             Tetr.figureIs();
-            
+
             var reversedArr = Tetr.reversArr.reverse();
 
             Tetr.refineStartPos();
 
-            Tetr.addFigureToNewArr(reversedArr);
-
-            Tetr.resetAllFlags();
-            
-            Tetr.move();
-
+            if (this.checkCollision()) {
+               Tetr.addFigureToNewArr(reversedArr);
+               Tetr.move();
+            }
 
          },
-         resetAllFlags: function(){
+         resetAllFlags: function() {
             this.isHorizontal = false;
             this.isCube = false;
             this.isLine = false;
@@ -366,12 +409,16 @@
             this.startX = this.gridY;
             this.startY = this.gridY;
             this.endX = 0;
-            this.endY = 0; 
-         }, 
+            this.endY = 0;
+            this.reversArr = [];
+         },
          pause: function() {
             alert("pause");
          }
       };
+
+      ctx.width = Tetr.ctxWidth();
+      ctx.height = Tetr.ctxHeight();
 
       Array.prototype.clone = function(clear) {
 
@@ -396,6 +443,7 @@
          }
          return newArr;
       };
+
       Array.prototype.reverse = function() {
 
          var newArr = new Array;
