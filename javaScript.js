@@ -2,7 +2,7 @@
     "use strict";
 
     var ctx = document.getElementById('myCanvas'),
-        context = ctx.getContext('2d');
+      context = ctx.getContext('2d');
 
     function Tetr() {
 
@@ -64,8 +64,7 @@
       this._fillColor = "#00F";
 
 
-        
-        
+
       /**
        * Canvas parameters
        */
@@ -248,7 +247,7 @@
       drawBg: function() {
         context.clearRect(0, 0, context.canvas.width, context.canvas.height);
         context.beginPath();
-        context.rect(0, 0, tetris.backgrWidth, tetris.backgrHeight);
+        context.rect(0, 0, this.backgrWidth, this.backgrHeight);
         context.fillStyle = '#F4F4F4';
         context.fill();
         context.lineWidth = 1;
@@ -507,16 +506,17 @@
 
     Array.prototype.reverse = function() {
 
-      var newArr = new Array;
+      var _this = tetris,
+        newArr = new Array;
 
-      for (var i = tetris.endX - tetris.startX; i >= 0; i--) {
+      for (var i = _this.endX - _this.startX; i >= 0; i--) {
         newArr.push([]);
       }
-      for (var i = tetris.endX - tetris.startX; i >= 0; i--) {
-        for (var j = 0; j <= tetris.endY - tetris.startY; j++) {
+      for (var i = _this.endX - _this.startX; i >= 0; i--) {
+        for (var j = 0; j <= _this.endY - _this.startY; j++) {
 
 
-          newArr[i].push(tetris.reversArr[j][i]);
+          newArr[i].push(_this.reversArr[j][i]);
 
         }
       }
